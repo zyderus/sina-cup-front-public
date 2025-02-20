@@ -1,13 +1,13 @@
 name: Deployment Pipeline
 
 on:
-  # workflow_dispatch:
-  #   inputs:
-  #     confirm_deploy:
-  #       description: 'Confirm deployment?'
-  #       type: boolean
-  #       required: true
-  #       default: false
+  workflow_dispatch:
+    inputs:
+      confirm_deploy:
+        description: 'Confirm deployment?'
+        type: boolean
+        required: true
+        default: false
 
   workflow_run:
     workflows: ['CI Pipeline'] # Name of the first workflow
