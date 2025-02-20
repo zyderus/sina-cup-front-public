@@ -14,7 +14,10 @@ jobs:
 
   STAGE:
     runs-on: ubuntu-latest
-    environment: Stage
+    environment: 
+      name: Stage
+      url: https://stg.example-prod-url.com
+    
 
     needs: DEV
     steps:
@@ -26,8 +29,6 @@ jobs:
     environment:
       name: Prod
       url: https://example-prod-url.com
-      reviewers:
-        - zyderus@gmail.com
 
     needs: STAGE
     steps:
