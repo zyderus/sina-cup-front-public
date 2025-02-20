@@ -15,13 +15,16 @@ jobs:
     steps:
       - name: Download success artifact
         uses: actions/download-artifact@v4
+        with:
+          name: success-artifact
+          path: ./artifact
 
       - name: Display structure of downloaded files
         run: ls -R
 
       - name: Check if CI passed
         run: |
-          if [ ! -f ./success.txt]; then
+          if [ ! -f ./artifact/success.txt ]; then
             echo "CI Pipeline did not pass. Aborting deployment."
             exit 1
           else
