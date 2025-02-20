@@ -23,7 +23,11 @@ jobs:
 
   PROD:
     runs-on: ubuntu-latest
-    environment: Prod
+    environment:
+      name: Prod
+      url: https://example-prod-url.com
+      reviewers:
+        - zyderus@gmail.com
 
     needs: STAGE
     steps:
