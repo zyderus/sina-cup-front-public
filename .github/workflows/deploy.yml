@@ -1,13 +1,13 @@
 name: Deployment Pipeline
 
 on:
-  workflow_dispatch:
-    inputs:
-      confirm_deploy:
-        description: 'Confirm deployment?'
-        type: boolean
-        required: true
-        default: false
+  # workflow_dispatch:
+  #   inputs:
+  #     confirm_deploy:
+  #       description: 'Confirm deployment?'
+  #       type: boolean
+  #       required: true
+  #       default: false
 
   workflow_run:
     workflows: ['CI Pipeline'] # Name of the first workflow
@@ -15,35 +15,23 @@ on:
       - completed
 
 jobs:
-  check-ci-status:
+  wait-for-approval:
     runs-on: ubuntu-latest
     steps:
-      - name: Download success artifact
-        uses: actions/download-artifact@v4
+      - name: Await Manual Approval
+        uses: actions/publish-action@v1
         with:
-          name: success-artifact
-          path: ./artifact
-
-      - name: Display structure of downloaded files
-        run: ls -R
-
-      - name: Check if CI passed
-        run: |
-          if [ ! -f ./artifact/success.txt ]; then
-            echo "CI Pipeline did not pass. Aborting deployment."
-            exit 1
-          else
-            echo "CI Pipeline passed. Proceeding with deployment."
-          fi
+          message: 'Approve deployment to Production?'
+          reactions: '👍 👎'
 
   PROD:
     runs-on: ubuntu-latest
-    needs: check-ci-status
+    needs: wait-for-approval
     environment:
       name: Prod
       url: https://example-prod-url.com
 
-    if: github.event.inputs.confirm_deploy == 'true'
+    if: github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Deploy
         run: echo "Deploying to Prod"
