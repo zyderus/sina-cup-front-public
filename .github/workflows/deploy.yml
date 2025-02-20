@@ -19,6 +19,9 @@ jobs:
           name: success-artifact
           path: ./artifact
 
+      - name: Display structure of downloaded files
+        run: ls -R
+
       - name: Check if CI passed
         run: |
           if [ ! -f ./artifact/success.txt]; then

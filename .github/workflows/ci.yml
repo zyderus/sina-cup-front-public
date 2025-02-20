@@ -40,4 +40,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: success-artifact
-          path: ./artifact/success.txt
+          path: success.txt
