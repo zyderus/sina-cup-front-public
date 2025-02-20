@@ -1,17 +1,12 @@
-name: Environments
+name: CI Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - '**'
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
-    inputs:
-      confirm_deploy:
-        description: 'Confirm deployment?'
-        type: boolean
-        required: true
-        default: false
+    branches:
+      - main
 
 jobs:
   DEV:
@@ -25,24 +20,11 @@ jobs:
 
   STAGE:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: Stage
       url: https://stg.example-prod-url.com
-    
 
     needs: DEV
     steps:
       - name: Deploy
         run: echo "Deploying to Stage"
-
-  PROD:
-    runs-on: ubuntu-latest
-    environment:
-      name: Prod
-      url: https://example-prod-url.com
-
-    needs: STAGE
-    if: github.event.inputs.confirm_deploy == 'true'
-    steps:
-      - name: Deploy
-        run: echo "Deploying to Prod"

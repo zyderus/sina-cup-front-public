@@ -1,0 +1,22 @@
+name: Deployment Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_deploy:
+        description: 'Confirm deployment?'
+        type: boolean
+        required: true
+        default: false
+
+jobs:
+  PROD:
+    runs-on: ubuntu-latest
+    environment:
+      name: Prod
+      url: https://example-prod-url.com
+
+    if: github.event.inputs.confirm_deploy == 'true'
+    steps:
+      - name: Deploy
+        run: echo "Deploying to Prod"
