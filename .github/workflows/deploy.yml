@@ -21,7 +21,7 @@ jobs:
 
       - name: Check if CI passed
         run: |
-          if [ ! -f ./artifact/success.txt ]; then
+          if [ ! -f ./artifact/success.txt]; then
             echo "CI Pipeline did not pass. Aborting deployment."
             exit 1
           else
