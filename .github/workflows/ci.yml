@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      confirm_deploy:
+        description: 'Confirm deployment?'
+        type: boolean
+        required: true
+        default: false
 
 jobs:
   DEV:
@@ -36,6 +42,7 @@ jobs:
       url: https://example-prod-url.com
 
     needs: STAGE
+    if: github.event.inputs.confirm_deploy == 'true'
     steps:
       - name: Deploy
         run: echo "Deploying to Prod"
