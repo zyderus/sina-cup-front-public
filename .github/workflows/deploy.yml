@@ -10,6 +10,24 @@ on:
         default: false
 
 jobs:
+  check-ci-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download success artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: success-artifact
+          path: ./artifact
+
+      - name: Check if CI passed
+        run: |
+          if [ ! -f ./artifact/success111111111.txt ]; then
+            echo "CI Pipeline did not pass. Aborting deployment."
+            exit 1
+          else
+            echo "CI Pipeline passed. Proceeding with deployment."
+          fi
+
   PROD:
     runs-on: ubuntu-latest
     environment:
