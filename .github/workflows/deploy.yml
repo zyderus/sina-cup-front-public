@@ -30,6 +30,7 @@ jobs:
 
   PROD:
     runs-on: ubuntu-latest
+    needs: check-ci-status
     environment:
       name: Prod
       url: https://example-prod-url.com
