@@ -1,37 +1,36 @@
-name: Deployment Pipeline
-
+name: Publish to PyPI
 on:
-  # workflow_dispatch:
-  #   inputs:
-  #     confirm_deploy:
-  #       description: 'Confirm deployment?'
-  #       type: boolean
-  #       required: true
-  #       default: false
-
-  workflow_run:
-    workflows: ['CI Pipeline'] # Name of the first workflow
-    types:
-      - completed
+  push:
+    tags:
+      - '*.*.*'
 
 jobs:
-  wait-for-approval:
+  publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Await Manual Approval
-        uses: actions/publish-action@v1
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          message: 'Approve deployment to Production?'
-          reactions: '👍 👎'
+          python-version: '3.13'
 
-  PROD:
-    runs-on: ubuntu-latest
-    needs: wait-for-approval
-    environment:
-      name: Prod
-      url: https://example-prod-url.com
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install .[build]
 
-    if: github.event.workflow_run.conclusion == 'success'
-    steps:
-      - name: Deploy
-        run: echo "Deploying to Prod"
+      - name: Build package
+        run: python -m build
+
+      - name: Test publish package
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}

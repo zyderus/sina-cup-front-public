@@ -1,0 +1,37 @@
+name: Deployment Pipeline
+
+on:
+  # workflow_dispatch:
+  #   inputs:
+  #     confirm_deploy:
+  #       description: 'Confirm deployment?'
+  #       type: boolean
+  #       required: true
+  #       default: false
+
+  workflow_run:
+    workflows: ['CI Pipeline'] # Name of the first workflow
+    types:
+      - completed
+
+jobs:
+  wait-for-approval:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Await Manual Approval
+        uses: actions/publish-action@v1
+        with:
+          message: 'Approve deployment to Production?'
+          reactions: '👍 👎'
+
+  PROD:
+    runs-on: ubuntu-latest
+    needs: wait-for-approval
+    environment:
+      name: Prod
+      url: https://example-prod-url.com
+
+    if: github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Deploy
+        run: echo "Deploying to Prod"
