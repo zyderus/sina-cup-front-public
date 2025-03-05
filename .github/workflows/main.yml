@@ -66,7 +66,7 @@ jobs:
 
   # 🎯 Step 4: Deploy to Production (Only after approval)
   deploy-prod:
-    # needs: deploy-staging
+    needs: build-and-push
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
