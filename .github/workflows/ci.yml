@@ -9,7 +9,6 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   # ✅ Step 1: Install Dependencies, Lint, and Run Tests
@@ -38,7 +37,7 @@ jobs:
         run: echo 'Running Integration tests...' # Assumes a separate script for integration tests
 
   # 🚀 Step 2: Build & Push Docker Image (Only for main branch)
-  build-and-push:
+  build:
     needs: test
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
@@ -46,29 +45,40 @@ jobs:
       # - name: Checkout code
       #   uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
-        run: echo 'Logging in to Docker hub...'
+      - name: Build & Package
+        run: |
+          mkdir -p dist
+          echo "Build output" > dist/output.txt
 
-      - name: Build and tag Docker image
-        run: echo 'Building and tagging a docker image...'
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+          retention-days: 3
 
-      - name: Push image to Docker Hub
-        run: echo 'Pushing the docker image...'
-
-  # 🎭 Step 3: Deploy to Staging
-  deploy-staging:
-    needs: build-and-push
-    if: github.ref == 'refs/heads/main'
+  integration_test:
+    needs: test
+    if: github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to AWS ECS (Staging)
-        run: echo 'Deploying Staging to AWS ECS...'
+      - name: Print branch name
+        run: echo 'Running on branch ${{ github.ref_name }}'
 
-  # 🎯 Step 4: Deploy to Production (Only after approval)
-  deploy-prod:
-    needs: build-and-push
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to AWS ECS (Production)
-        run: echo 'Deploying Production to AWS ECS...'
+  # # 🎭 Step 3: Deploy to Staging
+  # deploy-staging:
+  #   needs: build
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to AWS ECS (Staging)
+  #       run: echo 'Deploying Staging to AWS ECS...'
+
+  # # 🎯 Step 4: Deploy to Production (Only after approval)
+  # deploy-prod:
+  #   needs: build
+  #   if: startsWith(github.ref, 'refs/tags/v')
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to AWS ECS (Production)
+  #       run: echo 'Deploying Production to AWS ECS...'
