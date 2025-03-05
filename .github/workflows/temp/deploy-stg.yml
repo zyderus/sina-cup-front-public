@@ -21,13 +21,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: /dist/
+          path: dist/
 
       - name: Verify Artifact Contents
-        run: ls -l /dist/
+        run: ls -l dist/
 
       - name: Show Artifact Contents
-        run: cat /dist/output.txt
+        run: cat dist/output.txt
 
       - name: Deploy to Staging
-        run: echo "Deploying using files from /dist/"
+        run: echo "Deploying using files from dist/"
