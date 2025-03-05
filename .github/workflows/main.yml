@@ -1,9 +1,13 @@
 name: Main Pipeline
 
 on:
+  push:
+    branches:
+      - '**'
   pull_request:
     branches:
-      - main # Change this to your main branch name
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
