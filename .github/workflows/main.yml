@@ -51,7 +51,7 @@ jobs:
         run: echo 'Building and tagging a docker image...'
 
       - name: Push image to Docker Hub
-        run: 'Pushing the docker image...'
+        run: echo 'Pushing the docker image...'
 
   # 🎭 Step 3: Deploy to Staging
   deploy-staging:
