@@ -23,6 +23,7 @@ jobs:
           retention-days: 3
 
   receive:
+    needs: send
     runs-on: ubuntu-latest
     steps:
       - name: Download Build Artifacts
