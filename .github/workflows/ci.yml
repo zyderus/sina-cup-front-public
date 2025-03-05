@@ -12,7 +12,7 @@ jobs:
       - name: Build & Package
         run: |
           mkdir -p dist
-          echo "Build output" > dist/output.txt
+          echo "Hey Rustam\nYou're a DevOps Ninja\nUnstoppable!!!" > dist/output.txt
           ls -l dist/
 
       - name: Upload Build Artifacts
