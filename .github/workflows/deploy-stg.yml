@@ -1,14 +1,18 @@
 name: Deploy to Staging Pipeline
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ['CI Pipeline'] # Must match the workflow name in `ci.yml`
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      (github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/main')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
