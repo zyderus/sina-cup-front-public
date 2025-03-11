@@ -14,14 +14,19 @@ jobs:
       github.event_name == 'workflow_dispatch' || 
       (github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/main')
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
 
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ./dist
+      # - name: Download Build Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: build-artifacts
+      #     path: ./dist
+
+      - name: Get artifacts list
+        run: |
+          curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts
 
       - name: Verify Artifact Contents
         run: ls -l dist/
