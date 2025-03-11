@@ -21,7 +21,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: dist/
+          path: ./dist
 
       - name: Verify Artifact Contents
         run: ls -l dist/

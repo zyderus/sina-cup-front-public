@@ -1,0 +1,42 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build & Package
+        run: |
+          mkdir -p dist
+          echo -e "Hey Rustam\nYou're a DevOps Ninja\nUnstoppable!!!" > dist/output.txt
+          ls -l dist/
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+          retention-days: 3
+
+  receive:
+    needs: send
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: ./dist
+
+      - name: Verify Artifact Contents
+        run: ls -l dist/
+
+      - name: Show Artifact Contents
+        run: cat dist/output.txt
+
+      - name: Deploy to Staging
+        run: echo "Deploying using files from dist/"

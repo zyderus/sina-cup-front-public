@@ -4,11 +4,47 @@ on:
   push:
     branches:
       - '**'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  send:
+  # ✅ Step 1: Install Dependencies, Lint, and Run Tests
+  test:
     runs-on: ubuntu-latest
     steps:
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
+
+      # - name: Set up Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: 18
+      #     cache: 'npm'
+
+      # - name: Install dependencies
+      #   run: npm ci # Ensures clean, reproducible installs
+
+      - name: Run linting
+        run: echo 'Linting...'
+
+      - name: Run unit tests
+        run: echo 'Running unit tests...'
+
+      - name: Run integration tests
+        run: echo 'Running Integration tests...' # Assumes a separate script for integration tests
+
+  # 🚀 Step 2: Build & Push Docker Image (Only for main branch)
+  build:
+    needs: test
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
+
       - name: Build & Package
         run: |
           mkdir -p dist
@@ -22,21 +58,28 @@ jobs:
           path: dist/
           retention-days: 3
 
-  receive:
-    needs: send
+  integration_test:
+    needs: test
+    if: github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ./dist
+      - name: Print branch name
+        run: echo 'Running on branch ${{ github.ref_name }}'
 
-      - name: Verify Artifact Contents
-        run: ls -l dist/
+  # # 🎭 Step 3: Deploy to Staging
+  # deploy-staging:
+  #   needs: build
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to AWS ECS (Staging)
+  #       run: echo 'Deploying Staging to AWS ECS...'
 
-      - name: Show Artifact Contents
-        run: cat dist/output.txt
-
-      - name: Deploy to Staging
-        run: echo "Deploying using files from dist/"
+  # # 🎯 Step 4: Deploy to Production (Only after approval)
+  # deploy-prod:
+  #   needs: build
+  #   if: startsWith(github.ref, 'refs/tags/v')
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to AWS ECS (Production)
+  #       run: echo 'Deploying Production to AWS ECS...'
