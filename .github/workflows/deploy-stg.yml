@@ -22,11 +22,29 @@ jobs:
       #   with:
       #     name: build-artifacts
       #     path: ./dist
-
-      - name: Get artifacts list
+      - name: Download and extract artifact
         run: |
-          curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts
+          artifact_id=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts \
+            | jq '.artifacts[0].id')
+
+          echo "Artifact ID: $artifact_id"
+
+          # Download the artifact as a ZIP file
+          curl -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -o artifact.zip \
+            https://api.github.com/repos/${{ github.repository }}/actions/artifacts/$artifact_id/zip
+
+          # Create dist folder
+          mkdir -p dist
+
+          # Extract the artifact ZIP into dist/
+          unzip artifact.zip -d dist
+
+      # - name: Get artifacts list
+      #   run: |
+      #     curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      #     https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts
 
       - name: Verify Artifact Contents
         run: ls -l dist/
