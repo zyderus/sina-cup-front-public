@@ -9,24 +9,29 @@ on:
       - main
   workflow_dispatch:
     inputs:
-      job-to-run:
-        description: 'Job to run'
+      run-e2e:
+        description: 'Run E2E tests'
         required: true
-        default: 'all'
+        default: 'yes'
         type: choice
         options:
-          - all
-          - e2e-optional
-          - e2e-merge
+          - 'yes'
+          - 'no'
 
 jobs:
-  # Core CI jobs (lint/audit/unit)
+  # Core CI jobs (automated tests)
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request_target' && (github.event_name != 'workflow_dispatch' || inputs.job-to-run == 'all')
+    # Skip this job if it's a manual trigger specifically for E2E
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.run-e2e != 'yes'
     steps:
       # - uses: actions/checkout@v4
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '18'
+      #     cache: 'npm'
       # - run: npm ci
       # - run: npm run lint
       - run: echo 'Running linting...'
@@ -35,49 +40,77 @@ jobs:
   #   name: Audit
   #   runs-on: ubuntu-latest
   #   needs: lint
-  #   if: github.event_name != 'pull_request_target'
+  #   # Skip this job if it's a manual trigger specifically for E2E
+  #   if: github.event_name != 'workflow_dispatch' || github.event.inputs.run-e2e != 'yes'
   #   steps:
-  #     # - uses: actions/checkout@v4
-  #     # - run: npm ci
-  #     # - run: npm audit
-  #     - run: echo 'Running audit...'
+  #     - uses: actions/checkout@v4
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '18'
+  #         cache: 'npm'
+  #     - run: npm ci
+  #     - run: npm audit --production
 
   # unit-tests:
   #   name: Unit Tests
   #   runs-on: ubuntu-latest
   #   needs: audit
-  #   if: github.event_name != 'pull_request_target'
+  #   # Skip this job if it's a manual trigger specifically for E2E
+  #   if: github.event_name != 'workflow_dispatch' || github.event.inputs.run-e2e != 'yes'
   #   steps:
-  #     # - uses: actions/checkout@v4
-  #     # - run: npm ci
-  #     # - run: npm run test:unit
-  #     - run: echo 'Running unit tests...'
+  #     - uses: actions/checkout@v4
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '18'
+  #         cache: 'npm'
+  #     - run: npm ci
+  #     - run: npm run test:unit
+  #     # Save test status for other jobs to reference
+  #     - name: Create status file
+  #       if: always()
+  #       run: echo ${{ job.status }} > unit-test-status.txt
+  #     - name: Upload status
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: test-status
+  #         path: unit-test-status.txt
+  #         retention-days: 1
 
-  e2e-optional:
+  # Optional E2E tests for manual trigger or feature branches
+  e2e-tests-optional:
     name: E2E Tests (Optional)
     runs-on: ubuntu-latest
     needs: [lint]
-    # needs: [lint, audit, unit-tests]
-    timeout-minutes: 30
     if: |
-      github.event_name == 'workflow_dispatch' && inputs.job-to-run == 'e2e-optional' ||
-      (github.event_name == 'push' && github.ref_name != 'main')
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.run-e2e == 'yes') ||
+      (github.event_name == 'push' && github.ref != 'refs/heads/main')
     steps:
       # - uses: actions/checkout@v4
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '18'
+      #     cache: 'npm'
       # - run: npm ci
       # - run: npm run build
       # - run: npm run test:e2e
       - run: echo 'Running OPTIONAL e2e tests...'
 
-  e2e-merge:
-    name: E2E Tests (Mandatory on Merge)
+  # Mandatory E2E tests for PR merges to main
+  e2e-tests-mandatory:
+    name: E2E Tests (Mandatory)
     runs-on: ubuntu-latest
-    needs: [lint]
-    # needs: [lint, audit, unit-tests]
-    timeout-minutes: 30
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     steps:
       # - uses: actions/checkout@v4
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '18'
+      #     cache: 'npm'
       # - run: npm ci
       # - run: npm run build
       # - run: npm run test:e2e
